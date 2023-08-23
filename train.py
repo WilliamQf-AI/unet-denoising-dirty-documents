@@ -6,6 +6,7 @@ from unet import UNet
 from datasets import UNetDataset
 import transforms as Transforms
 from torch.utils.data import DataLoader
+from torch.autograd import Variable
 
 if not os.path.exists('./weight'):
     os.mkdir('./weight')
@@ -76,6 +77,12 @@ def train():
             torch.save({
                 'net': net.state_dict()
             }, weight)
+            # 这是保存为ONNX的方法:
+            # 由于PyTorch的模型,是动态调整大小的,这里需要初始化一个指定格式的数据,用来调整模型大小
+            # 就是和你训练模型的时候用的数据一样的格式就行
+            dummy_input = Variable(torch.randn(1, 1, 28, 28)).to(device)
+            # 保存模型
+            torch.onnx.export(net, dummy_input, "torch.onnx")
             print('saved')
 
 
